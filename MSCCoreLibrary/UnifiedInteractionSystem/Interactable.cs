@@ -5,7 +5,7 @@
 /// </summary>
 public abstract class Interactable : MonoBehaviour
 {
-    internal Interactable()
+    protected Interactable()
     {
         if (InteractableHandler.initialized) return;
         Camera fpscam = GameObject.Find("PLAYER").transform.Find("Pivot/AnimPivot/Camera/FPSCamera/FPSCamera").GetComponent<Camera>();
