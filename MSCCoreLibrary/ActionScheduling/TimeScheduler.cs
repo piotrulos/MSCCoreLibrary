@@ -22,7 +22,7 @@ public class TimeScheduler : MonoBehaviour
     internal static void StartScheduler()
     {
         if (schedulerInstantiated) return;
-        timeScheduler = new GameObject("MSCLoader Time Scheduler");
+        timeScheduler = new GameObject("MSCCoreLibrary Time Scheduler");
         timeScheduler.AddComponent<TimeScheduler>();
 
         schedulerInstantiated = true;

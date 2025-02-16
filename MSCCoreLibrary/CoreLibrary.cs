@@ -3,5 +3,5 @@ namespace MSCCoreLibrary;
 
 internal class CoreLibrary
 {
-
+    
 }

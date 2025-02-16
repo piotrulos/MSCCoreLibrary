@@ -60,8 +60,18 @@ public static class GameTime
     static FsmInt fsm_time;
     static FsmFloat fsm_minutes;
     static FsmInt fsm_day;
-
+    static PlayMakerFSM colorFsm;
     static bool initialized = false;
+
+    /// <summary>
+    /// Event to invoke when the day changes
+    /// </summary>
+    /// <param name="day"></param>
+    public delegate void NextDayEventHandler(Days day);
+    /// <summary>
+    /// Event to invoke when the day changes
+    /// </summary>
+    public static event NextDayEventHandler OnNextDay;
 
     static bool Initialize()
     {
@@ -70,14 +80,19 @@ public static class GameTime
         Transform sun = GameObject.Find("MAP").transform.Find("SUN/Pivot/SUN");
         if (sun == null) return false;
 
-        PlayMakerFSM fsm = sun.GetPlayMaker("Color");
+        colorFsm = sun.GetPlayMaker("Color");
 
-        fsm_time = fsm.GetVariable<FsmInt>("Time");
-        fsm_minutes = fsm.GetVariable<FsmFloat>("Minutes");
+        fsm_time = colorFsm.GetVariable<FsmInt>("Time");
+        fsm_minutes = colorFsm.GetVariable<FsmFloat>("Minutes");
 
         fsm_day = PlayMakerGlobals.Instance.Variables.GetFsmInt("GlobalDay");
 
         initialized = (fsm_time != null && fsm_minutes != null && fsm_day != null);
+        colorFsm.FsmInject("Next Day", delegate
+        {
+            Days day = Day;
+            OnNextDay?.Invoke(day);
+        }, false, 1);
         return initialized;
     }
 
