@@ -15,10 +15,6 @@ public static class GameTime
     [Flags] public enum Days
     {
         /// <summary>
-        /// Sunday
-        /// </summary>
-        Sunday = 1 << 0,
-        /// <summary>
         /// Monday
         /// </summary>
         Monday = 1 << 1,
@@ -42,6 +38,10 @@ public static class GameTime
         /// Saturday
         /// </summary>
         Saturday = 1 << 6,
+        /// <summary>
+        /// Sunday
+        /// </summary>
+        Sunday = 1 << 7,
 
         /// <summary>
         /// All days from Monday to Friday
@@ -73,12 +73,12 @@ public static class GameTime
     /// </summary>
     public static event NextDayEventHandler OnNextDay;
 
-    static bool Initialize()
+    internal static void Initialize()
     {
-        if (initialized) return true;
+        if (initialized) return;
 
-        Transform sun = GameObject.Find("MAP").transform.Find("SUN/Pivot/SUN");
-        if (sun == null) return false;
+        GameObject sun = GameObject.Find("MAP").transform.Find("SUN/Pivot/SUN").gameObject;
+        if (sun == null) return; 
 
         colorFsm = sun.GetPlayMaker("Color");
 
@@ -88,14 +88,15 @@ public static class GameTime
         fsm_day = PlayMakerGlobals.Instance.Variables.GetFsmInt("GlobalDay");
 
         initialized = (fsm_time != null && fsm_minutes != null && fsm_day != null);
-        colorFsm.FsmInject("Next Day", delegate
+        colorFsm.FsmInject("00-02", delegate
         {
             Days day = Day;
             OnNextDay?.Invoke(day);
-        }, false, 1);
-        return initialized;
-    }
+            ModConsole.Warning($"[GameTime] Day changed to {day}");
 
+        }, index: 0);
+    }
+    internal static void Reset() => initialized = false;
     /// <summary>
     /// Current hour from 0 to 24
     /// </summary>
@@ -103,7 +104,7 @@ public static class GameTime
     {
         get
         {
-            if (!Initialize()) return 0;
+            if (!initialized) return 0;
             int hour = fsm_time.Value == 24 ? 0 : fsm_time.Value;
             if (fsm_minutes.Value > 60f) hour++;
             return hour;
@@ -117,7 +118,7 @@ public static class GameTime
     {
         get
         {
-            if (!Initialize()) return 0;
+            if (!initialized) return 0;
             return Mathf.Clamp(Mathf.FloorToInt(fsm_minutes.Value) % 60, 0, 59);
         }
     }
@@ -129,7 +130,7 @@ public static class GameTime
     {
         get
         {
-            if (!Initialize()) return 0;
+            if (!initialized) return 0;
             return (Days)(1 << fsm_day.Value);
         }
     }

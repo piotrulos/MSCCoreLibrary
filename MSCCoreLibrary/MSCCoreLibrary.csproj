@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="ActionScheduling\GameTime.cs" />
     <Compile Include="CoreLibrary.cs" />
+    <Compile Include="CoreLibraryHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActionScheduling\TimeScheduler.cs" />
     <Compile Include="UnifiedInteractionSystem\Interactable.cs" />

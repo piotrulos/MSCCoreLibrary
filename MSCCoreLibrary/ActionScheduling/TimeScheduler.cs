@@ -24,13 +24,14 @@ public class TimeScheduler : MonoBehaviour
         if (schedulerInstantiated) return;
         timeScheduler = new GameObject("MSCCoreLibrary Time Scheduler");
         timeScheduler.AddComponent<TimeScheduler>();
-
+        timeScheduler.transform.SetParent(CoreLibrary.coreLibraryHelper.transform, false);
         schedulerInstantiated = true;
     }
 
 
     internal static void StopScheduler()
     {
+        CoreLibrary.SetupCoreLibrary();
         if (!schedulerInstantiated) return;
         GameObject.Destroy(timeScheduler);
         timeScheduler = null;
