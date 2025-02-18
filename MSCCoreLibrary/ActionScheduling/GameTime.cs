@@ -5,7 +5,7 @@ using System;
 namespace MSCCoreLibrary;
 
 /// <summary>
-/// Class to read the current in-game time and day
+/// Helper class for reading the game time values.
 /// </summary>    
 public static class GameTime
 {
@@ -14,6 +14,10 @@ public static class GameTime
     /// </summary>       
     [Flags] public enum Days
     {
+        /// <summary>
+        /// Invalid day
+        /// </summary>
+        Invalid = 0,
         /// <summary>
         /// Monday
         /// </summary>
@@ -57,16 +61,16 @@ public static class GameTime
         All = Week | Weekend
     }
 
-    static FsmInt fsm_time;
-    static FsmFloat fsm_minutes;
-    static FsmInt fsm_day;
-    static PlayMakerFSM colorFsm;
-    static bool initialized = false;
-
+    private static FsmInt fsm_time;
+    private static FsmFloat fsm_minutes;
+    private static FsmInt fsm_day;
+    private static PlayMakerFSM colorFsm;
+    private static bool initialized = false;
+    private static Days oldDay = Days.Invalid;
     /// <summary>
     /// Event to invoke when the day changes
     /// </summary>
-    /// <param name="day"></param>
+    /// <param name="day">Current day (that it changed to)</param>
     public delegate void NextDayEventHandler(Days day);
     /// <summary>
     /// Event to invoke when the day changes
@@ -84,16 +88,32 @@ public static class GameTime
 
         fsm_time = colorFsm.GetVariable<FsmInt>("Time");
         fsm_minutes = colorFsm.GetVariable<FsmFloat>("Minutes");
+        
+   
 
         fsm_day = PlayMakerGlobals.Instance.Variables.GetFsmInt("GlobalDay");
-
+        oldDay = (Days)fsm_day.Value;
         initialized = (fsm_time != null && fsm_minutes != null && fsm_day != null);
+        
+        //Normal day change (midnight)
         colorFsm.FsmInject("00-02", delegate
         {
             Days day = Day;
+            oldDay = Day;
             OnNextDay?.Invoke(day);
-            ModConsole.Warning($"[GameTime] Day changed to {day}");
+            Console.WriteLine($"[GameTime] Day changed to {day}");
 
+        }, index: 0);
+
+        //Wakeup event (after sleeping)
+        colorFsm.FsmInject("State 3", delegate
+        {
+            Days day = Day;
+            if (day != oldDay) //check if day changed
+            {
+                OnNextDay?.Invoke(day);
+                Console.WriteLine($"[GameTime] Day changed to {day}");
+            }
         }, index: 0);
     }
     internal static void Reset() => initialized = false;
@@ -134,4 +154,19 @@ public static class GameTime
             return (Days)(1 << fsm_day.Value);
         }
     }
+
+    /// <summary>
+    /// Whether the current day is a weekend
+    /// </summary>
+    public static bool IsWeekend => Day.Equals(Days.Weekend);
+
+    /// <summary>
+    /// Whether the current day is a weekday
+    /// </summary>
+    public static bool IsWeekday => Day.Equals(Days.Week);
+
+    /// <summary>
+    /// Current time as 24 hour format
+    /// </summary>
+    public static string CurrentTime => $"{Hour:00}:{Minute:00}";
 }

@@ -75,4 +75,7 @@
     <Compile Include="UnifiedInteractionSystem\MSCGUI.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetPath)" "D:\Steam\steamapps\common\My Summer Car\Mods\References" /y</PostBuildEvent>
+  </PropertyGroup>
 </Project>
