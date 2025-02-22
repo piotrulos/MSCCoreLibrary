@@ -65,7 +65,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActionScheduling\GameTime.cs" />
+    <Compile Include="MSC Helper Classes\GameTime.cs" />
     <Compile Include="CoreLibrary.cs" />
     <Compile Include="CoreLibraryHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

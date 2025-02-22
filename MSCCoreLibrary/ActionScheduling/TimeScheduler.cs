@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MSCLoader;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,26 +22,42 @@ public class TimeScheduler : MonoBehaviour
 
     internal static void StartScheduler()
     {
-        if (schedulerInstantiated) return;
-        timeScheduler = new GameObject("MSCCoreLibrary Time Scheduler");
-        timeScheduler.AddComponent<TimeScheduler>();
-        timeScheduler.transform.SetParent(CoreLibrary.coreLibraryHelper.transform, false);
-        schedulerInstantiated = true;
+        try
+        {
+            if (schedulerInstantiated) return;
+            timeScheduler = new GameObject("MSCCoreLibrary Time Scheduler");
+            timeScheduler.AddComponent<TimeScheduler>();
+            timeScheduler.transform.SetParent(CoreLibrary.coreLibraryHelper.transform, false);
+            schedulerInstantiated = true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            ModConsole.Error($"TimeScheduler failed to start: {e.Message}");
+        }
     }
 
 
     internal static void StopScheduler()
     {
-        CoreLibrary.SetupCoreLibrary();
-        if (!schedulerInstantiated) return;
-        GameObject.Destroy(timeScheduler);
-        timeScheduler = null;
-        ScheduledActions = new List<ScheduledAction>();
-        previousMinute = previousHour = default;
-        previousDay = default;
-        executeActions = false;
 
-        schedulerInstantiated = false;
+        CoreLibrary.SetupCoreLibrary();
+        try
+        {
+            if (!schedulerInstantiated) return;
+            GameObject.Destroy(timeScheduler);
+            timeScheduler = null;
+            ScheduledActions = new List<ScheduledAction>();
+            previousMinute = previousHour = default;
+            previousDay = default;
+            executeActions = false;
+            schedulerInstantiated = false;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            ModConsole.Error($"TimeScheduler failed to stop: {e.Message}");
+        }
     }
 
     /// <summary>
@@ -215,33 +232,49 @@ public class TimeScheduler : MonoBehaviour
 
     internal static void SaveScheduler()
     {
-        ES2.Save(GameTime.Hour, $"Mods.txt?tag=MSCLoader_TimeScheduler||hour");
-        ES2.Save(GameTime.Minute, $"Mods.txt?tag=MSCLoader_TimeScheduler||minute");
-        ES2.Save(GameTime.Day, $"Mods.txt?tag=MSCLoader_TimeScheduler||day");
+        try
+        {
+            ES2.Save(GameTime.Hour, $"Mods.txt?tag=MSCLoader_TimeScheduler||hour");
+            ES2.Save(GameTime.Minute, $"Mods.txt?tag=MSCLoader_TimeScheduler||minute");
+            ES2.Save(GameTime.Day, $"Mods.txt?tag=MSCLoader_TimeScheduler||day");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e); 
+            ModConsole.Error($"TimeScheduler failed to save: {e.Message}");
+        }
     }
 
     internal static void LoadScheduler()
     {
-        int hour = default;
-        int minute = default;
-        GameTime.Days day = default;
+        try
+        {
+            int hour = default;
+            int minute = default;
+            GameTime.Days day = default;
 
-        bool savedata = true;
-        string savepath = "Mods.txt?tag=MSCLoader_TimeScheduler||";
+            bool savedata = true;
+            string savepath = "Mods.txt?tag=MSCLoader_TimeScheduler||";
 
-        if (ES2.Exists($"{savepath}hour"))
-            hour = ES2.Load<int>($"{savepath}hour");
-        else savedata = false;
+            if (ES2.Exists($"{savepath}hour"))
+                hour = ES2.Load<int>($"{savepath}hour");
+            else savedata = false;
 
-        if (ES2.Exists($"{savepath}minute"))
-            minute = ES2.Load<int>($"{savepath}minute");
+            if (ES2.Exists($"{savepath}minute"))
+                minute = ES2.Load<int>($"{savepath}minute");
 
-        if (ES2.Exists($"{savepath}day"))
-            day = ES2.Load<GameTime.Days>($"{savepath}day");
+            if (ES2.Exists($"{savepath}day"))
+                day = ES2.Load<GameTime.Days>($"{savepath}day");
 
-        if (savedata) InvokeMissedActions(hour, minute, day);
+            if (savedata) InvokeMissedActions(hour, minute, day);
 
-        timeScheduler.GetComponent<TimeScheduler>().StartCoroutine(Wait(day));
+            timeScheduler.GetComponent<TimeScheduler>().StartCoroutine(Wait(day));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            ModConsole.Error($"TimeScheduler failed to load: {e.Message}");
+        }
     }
 
     static IEnumerator Wait(GameTime.Days day)
