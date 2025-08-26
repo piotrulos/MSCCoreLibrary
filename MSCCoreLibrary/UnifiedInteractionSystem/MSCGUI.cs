@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MSCCoreLibrary;
 
-internal static class MSCGUI
+public static class MSCGUI
 {
     static bool assemble { set { _assemble.Value = value; } }
     static bool buy { set { _buy.Value = value; } }
