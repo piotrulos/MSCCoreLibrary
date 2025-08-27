@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace MSCCoreLibrary;
 
+/// <summary>
+/// MSCGUI
+/// </summary>
 public static class MSCGUI
 {
     static bool assemble { set { _assemble.Value = value; } }
