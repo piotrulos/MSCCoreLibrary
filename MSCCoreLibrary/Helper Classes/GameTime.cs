@@ -77,7 +77,7 @@ public static class GameTime
     /// </summary>
     public static event NextDayEventHandler OnNextDay;
 
-    internal static void Initialize()
+    internal static void InitializeMSC()
     {
         if (initialized) return;
 
@@ -88,8 +88,6 @@ public static class GameTime
 
         fsm_time = colorFsm.GetVariable<FsmInt>("Time");
         fsm_minutes = colorFsm.GetVariable<FsmFloat>("Minutes");
-        
-   
 
         fsm_day = PlayMakerGlobals.Instance.Variables.GetFsmInt("GlobalDay");
         oldDay = (Days)fsm_day.Value;
@@ -101,7 +99,6 @@ public static class GameTime
             Days day = Day;
             oldDay = Day;
             OnNextDay?.Invoke(day);
-            Console.WriteLine($"[GameTime] Day changed to {day}");
 
         }, index: 0);
 
@@ -112,10 +109,41 @@ public static class GameTime
             if (day != oldDay) //check if day changed
             {
                 OnNextDay?.Invoke(day);
-                Console.WriteLine($"[GameTime] Day changed to {day}");
             }
         }, index: 0);
     }
+
+    internal static void InitializeMWC()
+    {
+        if (initialized) return;
+
+        GameObject sun = GameObject.Find("MAP").transform.Find("PivotSun/Pivot/SUN").gameObject;    
+        if (sun == null) return;
+
+        colorFsm = sun.GetPlayMaker("Color");
+
+        fsm_time = colorFsm.GetVariable<FsmInt>("Time");
+        fsm_minutes = PlayMakerGlobals.Instance.Variables.GetFsmFloat("ClockMinutes");
+
+        fsm_day = PlayMakerGlobals.Instance.Variables.GetFsmInt("GlobalDay");
+        oldDay = (Days)fsm_day.Value;
+
+        initialized = (fsm_time != null && fsm_minutes != null && fsm_day != null);
+
+        colorFsm.FsmInject("Next day", delegate
+        {
+            Days day = Day;
+            oldDay = Day;
+            OnNextDay?.Invoke(day);
+        }, index: 0);
+
+        colorFsm.FsmInject("State 4", delegate
+        {
+            Days day = Day;
+            if (day != oldDay) OnNextDay?.Invoke(day);
+        }, index: 0);
+    }
+
     internal static void Reset() => initialized = false;
     /// <summary>
     /// Current hour from 0 to 24

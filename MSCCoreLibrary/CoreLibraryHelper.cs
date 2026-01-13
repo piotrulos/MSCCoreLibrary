@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using MSCLoader;
 
 namespace MSCCoreLibrary;
 
@@ -27,7 +28,8 @@ class CoreLibraryHelper : MonoBehaviour
     //aka PreLoad
     void GameSceneLoaded()
     {
-        GameTime.Initialize();
+        if (ModLoader.CurrentGame == Game.MySummerCar) GameTime.InitializeMSC();
+        else if (ModLoader.CurrentGame == Game.MyWinterCar) GameTime.InitializeMWC();
     }
 
     //aka OnLoad
