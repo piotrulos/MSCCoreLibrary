@@ -145,8 +145,9 @@ public static class GameTime
     }
 
     internal static void Reset() => initialized = false;
+
     /// <summary>
-    /// Current hour from 0 to 24
+    /// Current hour from 0 to 23
     /// </summary>
     public static int Hour
     {

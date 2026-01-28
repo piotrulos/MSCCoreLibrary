@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using MSCLoader;
+﻿using MSCLoader;
 
 namespace MSCCoreLibrary;
 
@@ -17,7 +16,6 @@ class CoreLibraryHelper : MonoBehaviour
                 break;
             case "GAME":
                 GameSceneLoaded();
-                StartCoroutine(WaitForGame());
                 break;
             case "Ending":
                 GameTime.Reset();
@@ -30,18 +28,5 @@ class CoreLibraryHelper : MonoBehaviour
     {
         if (ModLoader.CurrentGame == Game.MySummerCar) GameTime.InitializeMSC();
         else if (ModLoader.CurrentGame == Game.MyWinterCar) GameTime.InitializeMWC();
-    }
-
-    //aka OnLoad
-    void GameFullyLoaded()
-    {
-
-    }
-
-    IEnumerator WaitForGame()
-    {
-        while (GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera") == null)
-            yield return null;
-        GameFullyLoaded();
     }
 }

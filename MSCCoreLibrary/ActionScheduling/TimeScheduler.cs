@@ -20,20 +20,22 @@ public class TimeScheduler : MonoBehaviour
     static bool schedulerInstantiated = false;
     static bool executeActions = false;
 
+    const string savepath = "Mods.txt?tag=MSCLoader_TimeScheduler||";
+
     internal static void StartScheduler()
     {
         try
         {
             if (schedulerInstantiated) return;
-            timeScheduler = new GameObject("MSCCoreLibrary Time Scheduler");
-            timeScheduler.AddComponent<TimeScheduler>();
+
+            timeScheduler = new GameObject("MSCCoreLibrary Time Scheduler", typeof(TimeScheduler));
             timeScheduler.transform.SetParent(CoreLibrary.coreLibraryHelper.transform, false);
+            executeActions = false;
             schedulerInstantiated = true;
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            ModConsole.Error($"TimeScheduler failed to start: {e.Message}");
+            ModConsole.Error($"[MSCCoreLibrary] TimeScheduler failed to start: {e.Message}");
         }
     }
 
@@ -45,18 +47,16 @@ public class TimeScheduler : MonoBehaviour
         try
         {
             if (!schedulerInstantiated) return;
+
             GameObject.Destroy(timeScheduler);
-            timeScheduler = null;
-            ScheduledActions = new List<ScheduledAction>();
-            previousMinute = previousHour = default;
+            ScheduledActions = [];
+            previousMinute = previousHour = 0;
             previousDay = default;
-            executeActions = false;
-            schedulerInstantiated = false;
+            executeActions = schedulerInstantiated = false;
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            ModConsole.Error($"TimeScheduler failed to stop: {e.Message}");
+            ModConsole.Error($"[MSCCoreLibrary] TimeScheduler failed to stop: {e.Message}");
         }
     }
 
@@ -89,7 +89,7 @@ public class TimeScheduler : MonoBehaviour
     /// <summary>
     /// List containing all Scheduled Actions
     /// </summary>
-    public static List<ScheduledAction> ScheduledActions { get; private set; } = new List<ScheduledAction>();
+    public static List<ScheduledAction> ScheduledActions { get; private set; } = [];
 
     /// <summary>
     /// Method to schedule an action
@@ -102,15 +102,15 @@ public class TimeScheduler : MonoBehaviour
     /// <returns>Scheduled action</returns>
     public static ScheduledAction ScheduleAction(int hour, int minute, Action action, GameTime.Days day = GameTime.Days.All, bool oneTimeAction = false) 
     {
-        ScheduledAction sa;
-        ScheduledActions.Add(sa = new ScheduledAction(hour, minute, action, day, oneTimeAction));
+        ScheduledAction act;
+        ScheduledActions.Add(act = new ScheduledAction(hour, minute, action, day, oneTimeAction));
 
         ScheduledActions = SortActions(ScheduledActions);
 
-        return sa;
+        return act;
     }
 
-    static int previousMinute;
+    static int previousMinute = -1;
     static int previousHour;
     static GameTime.Days previousDay;
 
@@ -132,23 +132,25 @@ public class TimeScheduler : MonoBehaviour
 
     void Update()
     {
-        if (GameTime.Minute == previousMinute || !executeActions) return;
+        if (GameTime.Minute == previousMinute && GameTime.Hour == previousHour || !executeActions) return;
 
         for (int i = ScheduledActions.Count - 1; i >= 0; i--)
         {
             ScheduledAction action = ScheduledActions[i];
 
-            if (action.Hour == GameTime.Hour && action.Minute == GameTime.Minute && ((GameTime.Day & action.Day) != 0))
+            if ((action.Day & GameTime.Day) == 0) continue; // skip to next action if current action is not scheduled for today
+
+            if (action.Hour == GameTime.Hour && action.Minute == GameTime.Minute)
             {
                 action.Action.Invoke();
                 if (action.OneTimeAction) ScheduledActions.Remove(action);
             }
 
-            if (action.Hour > GameTime.Hour || action.Minute > GameTime.Minute) break;
+            if (action.Hour > GameTime.Hour || action.Minute > GameTime.Minute) break; // this only works because actions are alway sorted (ScheduleAction sorts them).
         }
 
-        if ((GameTime.Hour - previousHour == 0 && Math.Abs(GameTime.Minute - previousMinute) > 1) || // same hour, but minutes skipped                                                                     
-            GameTime.Hour - previousHour > 1 || GameTime.Hour - previousHour < 0) // more than one hour skipped
+        if ((GameTime.Hour == previousHour && GameTime.Minute - previousMinute > 1) || // same hour, but minutes skipped                                                                     
+            (GameTime.Hour - previousHour >= 1 && previousMinute != 59) || GameTime.Hour - previousHour < 0) // more than one hour skipped
         {
             InvokeMissedActions(previousHour, previousMinute, previousDay);
             OnTimeSkipped?.Invoke(GetTimeDifference(previousHour, previousMinute, previousDay));
@@ -172,7 +174,7 @@ public class TimeScheduler : MonoBehaviour
 
     static void InvokeMissedActions(int sinceHour, int sinceMinute, GameTime.Days sinceDay)
     {
-        List<ScheduledAction> missedActions = new List<ScheduledAction>();
+        List<ScheduledAction> missedActions = [];
 
         foreach (ScheduledAction action in ScheduledActions) if (ActionMissed(action, sinceDay, sinceHour, sinceMinute)) missedActions.Add(action);
 
@@ -188,7 +190,7 @@ public class TimeScheduler : MonoBehaviour
         int currentTotalMinutes = CalcTotalMinutes(GameTime.Hour, GameTime.Minute, GameTime.Day);
         int sinceTotalMinutes = CalcTotalMinutes(sinceHour, sinceMinute, sinceDay);
 
-        for (GameTime.Days day = GameTime.Days.Sunday; day <= GameTime.Days.Saturday; day = (GameTime.Days)((int)day << 1))
+        for (GameTime.Days day = GameTime.Days.Monday; day <= GameTime.Days.Sunday; day = (GameTime.Days)((int)day << 1))
         {
             if ((action.Day & day) != 0)
             {
@@ -206,25 +208,24 @@ public class TimeScheduler : MonoBehaviour
         return false;
     }
 
-    static int CalcTotalMinutes(int hour, int minute, GameTime.Days day = (GameTime.Days)1) => ((int)Math.Log((int)day, 2) * 24 + hour) * 60 + minute;
+    static int CalcTotalMinutes(int hour, int minute, GameTime.Days day = (GameTime.Days)1) => ((int)Math.Log((int)day, 2) * 24 + hour) * 60 + minute; // dont question please
 
     static List<ScheduledAction> SortActions(List<ScheduledAction> list)
     {
-        return list
+        return [.. list
             .OrderBy(action => GetFirstSetDay(action.Day))
             .ThenBy(action => action.Hour)
-            .ThenBy(action => action.Minute)
-            .ToList();
+            .ThenBy(action => action.Minute)];
 
         static int GetFirstSetDay(GameTime.Days day)
         {
-            if ((day & GameTime.Days.Sunday) != 0) return 0;
-            if ((day & GameTime.Days.Monday) != 0) return 1;
-            if ((day & GameTime.Days.Tuesday) != 0) return 2;
-            if ((day & GameTime.Days.Wednesday) != 0) return 3;
-            if ((day & GameTime.Days.Thursday) != 0) return 4;
-            if ((day & GameTime.Days.Friday) != 0) return 5;
-            if ((day & GameTime.Days.Saturday) != 0) return 6;
+            if ((day & GameTime.Days.Monday) != 0) return 0;
+            if ((day & GameTime.Days.Tuesday) != 0) return 1;
+            if ((day & GameTime.Days.Wednesday) != 0) return 2;
+            if ((day & GameTime.Days.Thursday) != 0) return 3;
+            if ((day & GameTime.Days.Friday) != 0) return 4;
+            if ((day & GameTime.Days.Saturday) != 0) return 5;
+            if ((day & GameTime.Days.Sunday) != 0) return 6;
 
             return int.MaxValue;
         }
@@ -234,14 +235,13 @@ public class TimeScheduler : MonoBehaviour
     {
         try
         {
-            ES2.Save(GameTime.Hour, $"Mods.txt?tag=MSCLoader_TimeScheduler||hour");
-            ES2.Save(GameTime.Minute, $"Mods.txt?tag=MSCLoader_TimeScheduler||minute");
-            ES2.Save(GameTime.Day, $"Mods.txt?tag=MSCLoader_TimeScheduler||day");
+            ES2.Save(GameTime.Hour, $"{savepath}hour");
+            ES2.Save(GameTime.Minute, $"{savepath}minute");
+            ES2.Save(GameTime.Day, $"{savepath}day");
         }
         catch (Exception e)
         {
-            Console.WriteLine(e); 
-            ModConsole.Error($"TimeScheduler failed to save: {e.Message}");
+            ModConsole.Error($"[MSCCoreLibrary] TimeScheduler failed to save: {e.Message}");
         }
     }
 
@@ -249,31 +249,31 @@ public class TimeScheduler : MonoBehaviour
     {
         try
         {
-            int hour = default;
-            int minute = default;
-            GameTime.Days day = default;
+            
+            bool savedata = ES2.Exists($"{savepath}hour") && ES2.Exists($"{savepath}minute") && ES2.Exists($"{savepath}day");
 
-            bool savedata = true;
-            string savepath = "Mods.txt?tag=MSCLoader_TimeScheduler||";
+            if (savedata)
+            {
+                int hour = ES2.Load<int>($"{savepath}hour");
+                int minute = ES2.Load<int>($"{savepath}minute");
+                GameTime.Days day = ES2.Load<GameTime.Days>($"{savepath}day");
+            
+                InvokeMissedActions(hour, minute, day);
+                timeScheduler.GetComponent<TimeScheduler>().StartCoroutine(Wait(day));
+            }
+            else
+            {
+                previousMinute = GameTime.Minute;
+                previousHour = GameTime.Hour;
+                previousDay = GameTime.Day;
 
-            if (ES2.Exists($"{savepath}hour"))
-                hour = ES2.Load<int>($"{savepath}hour");
-            else savedata = false;
+                executeActions = true;
+            }
 
-            if (ES2.Exists($"{savepath}minute"))
-                minute = ES2.Load<int>($"{savepath}minute");
-
-            if (ES2.Exists($"{savepath}day"))
-                day = ES2.Load<GameTime.Days>($"{savepath}day");
-
-            if (savedata) InvokeMissedActions(hour, minute, day);
-
-            timeScheduler.GetComponent<TimeScheduler>().StartCoroutine(Wait(day));
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            ModConsole.Error($"TimeScheduler failed to load: {e.Message}");
+            ModConsole.Error($"[MSCCoreLibrary] TimeScheduler failed to load: {e.Message}");
         }
     }
 
