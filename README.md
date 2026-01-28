@@ -2,3 +2,5 @@
 # MSCCoreLibrary
 
 Reference Library for MSC that is part of [MSCLoader](https://github.com/piotrulos/MSCModLoader)
+
+See [wiki](https://github.com/piotrulos/MSCCoreLibrary/wiki/) for usage.
