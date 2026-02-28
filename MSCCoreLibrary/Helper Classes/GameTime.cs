@@ -1,7 +1,6 @@
 ﻿using HutongGames.PlayMaker;
 using MSCLoader;
 using System;
-using System.Diagnostics;
 
 namespace MSCCoreLibrary;
 
@@ -122,7 +121,7 @@ public static class GameTime
 
         if (sun == null)
         {
-            ModConsole.LogError("[MSCCoreLibrary]: Sun not found");
+            ModConsole.LogError("[MSCCoreLibrary]: Sun not found. Hello darkness my old friend.");
             return;
         }
         
