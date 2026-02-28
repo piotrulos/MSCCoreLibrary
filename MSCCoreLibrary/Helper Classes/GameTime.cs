@@ -1,6 +1,7 @@
 ﻿using HutongGames.PlayMaker;
 using MSCLoader;
 using System;
+using System.Diagnostics;
 
 namespace MSCCoreLibrary;
 
@@ -117,8 +118,14 @@ public static class GameTime
     {
         if (initialized) return;
 
-        GameObject sun = GameObject.Find("MAP").transform.Find("PivotSun/Pivot/SUN").gameObject;    
-        if (sun == null) return;
+        GameObject sun = GameObject.Find("MAP").transform.Find("Sun/PivotSun/SUN").gameObject;
+
+        if (sun == null)
+        {
+            ModConsole.LogError("[MSCCoreLibrary]: Sun not found");
+            return;
+        }
+        
 
         colorFsm = sun.GetPlayMaker("Color");
 
