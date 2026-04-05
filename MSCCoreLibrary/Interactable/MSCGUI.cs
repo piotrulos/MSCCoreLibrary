@@ -1,4 +1,5 @@
-﻿using HutongGames.PlayMaker;
+﻿#if !Mini
+using HutongGames.PlayMaker;
 using System;
 using System.Collections.Generic;
 
@@ -51,3 +52,4 @@ public static class MSCGUI
     static readonly FsmString _subtitle = FsmVariables.GlobalVariables.FindFsmString("GUIsubtitle");
     #endregion FsmVariables
 }
+#endif

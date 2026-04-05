@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("MSC CoreLibrary")]
-[assembly: AssemblyDescription("My Summer Car Core Library\nThis Reference is part of MSCLoader")]
+[assembly: AssemblyDescription("My Seasonal Car Core Library\nThis Reference is part of MSCLoader")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("MSCLoader")]
 [assembly: AssemblyProduct("MSCCoreLibrary")]
@@ -35,4 +35,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.3")]
-[assembly: AssemblyFileVersion("1.0.3.18")]
+[assembly: AssemblyFileVersion("1.0.3.19")]

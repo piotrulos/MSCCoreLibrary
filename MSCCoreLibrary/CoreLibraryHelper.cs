@@ -1,4 +1,5 @@
-﻿using MSCLoader;
+﻿#if !Mini
+using MSCLoader;
 
 namespace MSCCoreLibrary;
 
@@ -30,3 +31,4 @@ class CoreLibraryHelper : MonoBehaviour
         else if (ModLoader.CurrentGame == Game.MyWinterCar) GameTime.InitializeMWC();
     }
 }
+#endif

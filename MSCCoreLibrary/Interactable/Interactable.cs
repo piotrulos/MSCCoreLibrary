@@ -1,4 +1,5 @@
-﻿namespace MSCCoreLibrary;
+﻿#if !Mini
+namespace MSCCoreLibrary;
 
 /// <summary>
 /// Class inheriting from MonoBehaviour, add this to any game object to make it interactable. Override the functions you need.
@@ -121,3 +122,4 @@ public abstract class Interactable : MonoBehaviour
     /// </summary>
     public virtual void scrollDown() { }
 }
+#endif

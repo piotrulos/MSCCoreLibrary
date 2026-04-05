@@ -1,4 +1,5 @@
-﻿namespace MSCCoreLibrary;
+﻿#if !Mini
+namespace MSCCoreLibrary;
 
 internal class InteractableHandler : MonoBehaviour
 {
@@ -101,3 +102,4 @@ internal class InteractableHandler : MonoBehaviour
         last = obj;
     }
 }
+#endif

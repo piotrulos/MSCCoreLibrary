@@ -1,4 +1,5 @@
-﻿using MSCLoader;
+﻿#if !Mini
+using MSCLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -290,3 +291,4 @@ public class TimeScheduler : MonoBehaviour
         yield break;
     }
 }
+#endif

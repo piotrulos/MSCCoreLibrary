@@ -1,4 +1,5 @@
-﻿using HutongGames.PlayMaker;
+﻿#if !Mini
+using HutongGames.PlayMaker;
 using MSCLoader;
 using System;
 
@@ -205,3 +206,4 @@ public static class GameTime
     /// </summary>
     public static string CurrentTime => $"{Hour:00}:{Minute:00}";
 }
+#endif
