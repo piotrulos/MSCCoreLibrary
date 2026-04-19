@@ -4,8 +4,30 @@ using System.Collections.Generic;
 
 namespace MSCCoreLibrary.InteractionSystem;
 [Serializable]
-public class MouseClickUnityEvent : UnityEvent<int, bool, int>
+public class MouseScrollUnityEvent : UnityEvent<bool>
 {
+}
+public enum InteractionType
+{
+    LeftClick = 0,
+    RightClick = 1,
+    MiddleClick = 2,
+    ScrollWheel = 3,
+    Use = 4
+}
+[Serializable]
+public class InteractionEvent
+{
+    // public InteractionType interactionType = InteractionType.LeftClick;
+    public bool playMasterAudioSound = false;
+    public string soundType = "";
+    public string variationName = "";
+    public UnityEvent OnClick = null;
+    public bool onHold = false;
+    public float holdTime = 0.5f;
+    public UnityEvent OnHold = null;
+    public MouseScrollUnityEvent OnScroll = null;
+
 }
 [Serializable]
 public class InteractionConfig
@@ -13,10 +35,8 @@ public class InteractionConfig
     public string interactionName = "";
     public string interactionIcon = "GUIuse";
     public string interactionText = "";
-    public MouseClickUnityEvent onMouseClick; //0=left, 1=right, 2=middle | bool= held | int=held time in seconds
-    //public UnityEvent onRightClick;
-    public UnityEvent<bool> onScroll; //true=up, false=down
-    public UnityEvent onUse; //cinput "Use"
+    public bool[] interactions = new bool[5] { false, false, false, false, false };
+    public InteractionEvent[] interactionEvents = new InteractionEvent[5];
 }
 
 [RequireComponent(typeof(Collider))]
@@ -24,7 +44,7 @@ public class InteractionConfig
 public class Interaction : MonoBehaviour
 {
     //Active    //
-    public InteractionConfig activeInteraction;
+    public InteractionConfig activeInteraction = null;
     public List<InteractionConfig> interactions = new List<InteractionConfig>();
 
     public void SetActiveInteraction(int index)
