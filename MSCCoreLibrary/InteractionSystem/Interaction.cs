@@ -7,6 +7,7 @@ namespace MSCCoreLibrary.InteractionSystem;
 public class MouseScrollUnityEvent : UnityEvent<bool>
 {
 }
+
 public enum InteractionType
 {
     LeftClick = 0,
@@ -15,10 +16,10 @@ public enum InteractionType
     ScrollWheel = 3,
     Use = 4
 }
+
 [Serializable]
 public class InteractionEvent
 {
-    // public InteractionType interactionType = InteractionType.LeftClick;
     public bool playMasterAudioSound = false;
     public string soundType = "";
     public string variationName = "";
@@ -28,22 +29,38 @@ public class InteractionEvent
     public UnityEvent OnHold = null;
     public MouseScrollUnityEvent OnScroll = null;
 
+    public InteractionEvent()
+    {
+        OnClick = new UnityEvent();
+        OnHold = new UnityEvent();
+        OnScroll = new MouseScrollUnityEvent();
+    }
 }
+
 [Serializable]
 public class InteractionConfig
 {
     public string interactionName = "";
     public string interactionIcon = "GUIuse";
     public string interactionText = "";
-    public bool[] interactions = new bool[5] { false, false, false, false, false };
+    public bool[] enabledInteractions = new bool[5] { false, false, false, false, false };
     public InteractionEvent[] interactionEvents = new InteractionEvent[5];
+
+    public InteractionConfig()
+    {
+        enabledInteractions = new bool[5] { false, false, false, false, false };
+        interactionEvents = new InteractionEvent[5];
+        for (int i = 0; i < 5; i++)
+        {
+            interactionEvents[i] = new InteractionEvent();
+        }
+    }
 }
 
 [RequireComponent(typeof(Collider))]
 [DisallowMultipleComponent]
 public class Interaction : MonoBehaviour
 {
-    //Active    //
     public InteractionConfig activeInteraction = null;
     public List<InteractionConfig> interactions = new List<InteractionConfig>();
 
@@ -69,3 +86,4 @@ public class Interaction : MonoBehaviour
         activeInteraction = interactions[0];
     }
 }
+
