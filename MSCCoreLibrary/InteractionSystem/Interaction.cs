@@ -1,22 +1,9 @@
 ﻿using System;
-using UnityEngine.Events;
 using System.Collections.Generic;
+using UnityEngine.Events;
+using static MSCCoreLibrary.InteractionSystem.Interaction;
 
 namespace MSCCoreLibrary.InteractionSystem;
-[Serializable]
-public class MouseScrollUnityEvent : UnityEvent<bool>
-{
-}
-
-public enum InteractionType
-{
-    LeftClick = 0,
-    RightClick = 1,
-    MiddleClick = 2,
-    ScrollWheel = 3,
-    Use = 4
-}
-
 [Serializable]
 public class InteractionEvent
 {
@@ -27,13 +14,15 @@ public class InteractionEvent
     public bool onHold = false;
     public float holdTime = 0.5f;
     public UnityEvent OnHold = null;
-    public MouseScrollUnityEvent OnScroll = null;
+    public UnityEvent OnScrollUp = null;
+    public UnityEvent OnScrollDown = null;
 
     public InteractionEvent()
     {
         OnClick = new UnityEvent();
         OnHold = new UnityEvent();
-        OnScroll = new MouseScrollUnityEvent();
+        OnScrollUp = new UnityEvent();
+        OnScrollDown = new UnityEvent();
     }
 }
 
@@ -56,11 +45,22 @@ public class InteractionConfig
         }
     }
 }
+public enum InteractionType
+{
+    LeftClick = 0,
+    RightClick = 1,
+    MiddleClick = 2,
+    ScrollWheel = 3,
+    Use = 4
+}
 
 [RequireComponent(typeof(Collider))]
 [DisallowMultipleComponent]
 public class Interaction : MonoBehaviour
 {
+
+
+
     public InteractionConfig activeInteraction = null;
     public List<InteractionConfig> interactions = new List<InteractionConfig>();
 
@@ -86,4 +86,7 @@ public class Interaction : MonoBehaviour
         activeInteraction = interactions[0];
     }
 }
+
+
+
 

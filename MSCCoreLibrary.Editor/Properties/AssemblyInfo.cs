@@ -5,16 +5,14 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MSC CoreLibrary")]
-[assembly: AssemblyDescription("My Seasonal Car Core Library\nThis Reference is part of MSCLoader")]
+[assembly: AssemblyTitle("MSCCoreLibrary.Editor")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("MSCLoader")]
-[assembly: AssemblyProduct("MSCCoreLibrary")]
-[assembly: AssemblyCopyright("GNU General Public License v3.0")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("MSCCoreLibrary.Editor")]
+[assembly: AssemblyCopyright("Copyright ©  2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: InternalsVisibleTo("MSCLoader")]
-
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
@@ -22,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("cdaed8d2-f6ad-47f3-b0fb-250085d84498")]
+[assembly: Guid("e368e1d9-6ad8-4cfc-a304-c7d7b6ef01bc")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -31,8 +29,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-// You can specify all the values or you can default the Build and Revision Numbers
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.3")]
 [assembly: AssemblyFileVersion("1.0.3.23")]
