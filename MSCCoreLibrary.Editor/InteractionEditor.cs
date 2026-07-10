@@ -93,17 +93,19 @@ namespace MSCCoreLibrary.InteractionSystem
                 EditorGUILayout.HelpBox("GameObject is not in the required layer (Tools, HingedObjects or Dashboard)!", MessageType.Error);
                 return;
             }
-
+            Undo.RecordObject(interactionComponent, "Modified Interaction Component");
+            EditorGUI.BeginChangeCheck();
+            serializedObject.Update();
             List<InteractionConfig> interactions = interactionComponent.interactions ?? new List<InteractionConfig>();
 
-            bool hasValidActive = interactionComponent.activeInteraction != null && interactions.Contains(interactionComponent.activeInteraction);
+            bool hasValidActive = interactionComponent.activeInteractionIndex >= 0;
             if (!hasValidActive)
             {
                 EditorGUILayout.HelpBox("No default active interaction is set!", MessageType.Warning);
             }
             else
             {
-                EditorGUILayout.HelpBox(string.Format("Default active interaction: {0}", interactionComponent.activeInteraction.interactionName), MessageType.Info);
+                EditorGUILayout.HelpBox(string.Format("Default active interaction: {0}", interactionComponent.interactions[interactionComponent.activeInteractionIndex].interactionName), MessageType.Info);
             }
 
             string[] icons = new string[] { "GUIuse", "GUIbuy", "GUIassemble", "GUIdisassemble", "GUIdrive", "GUIpassenger" };
@@ -137,7 +139,7 @@ namespace MSCCoreLibrary.InteractionSystem
 
                 if (!hasValidActive)
                 {
-                    interactionComponent.activeInteraction = newInteractionConfig;
+                    interactionComponent.activeInteractionIndex = 0;
                     hasValidActive = true;
                 }
                 interactionComponent.interactions = interactions;
@@ -155,7 +157,7 @@ namespace MSCCoreLibrary.InteractionSystem
 
                 if (showElement[i])
                 {
-                    if (interactionComponent.activeInteraction == interactions[i])
+                    if (interactionComponent.activeInteractionIndex == i)
                     {
                         EditorGUILayout.TextArea("<color=lime>This is the active interaction!</color>", helpBoxRich);
                     }
@@ -168,7 +170,7 @@ namespace MSCCoreLibrary.InteractionSystem
                     //set active
                     if (GUILayout.Button("Active", EditorStyles.toolbarButton))
                     {
-                        interactionComponent.activeInteraction = interactionConfig;
+                        interactionComponent.activeInteractionIndex = i;
                     }
 
                     if (GUILayout.Button("<color=red>X</color>", EditorStyles.toolbarButton))
@@ -179,11 +181,11 @@ namespace MSCCoreLibrary.InteractionSystem
                             interactions.Remove(interactionConfig);
                             showElement.RemoveAt(i);
                             showInteractionEventDetails.RemoveAt(i);
-                            i--;
-                            if (interactionComponent.activeInteraction == interactionConfig)
+                            if (interactionComponent.activeInteractionIndex == i)
                             {
-                                interactionComponent.activeInteraction = null;
+                                interactionComponent.activeInteractionIndex = -1;
                             }
+                            i--;
                             interactionComponent.interactions = interactions;
                             serializedObject.Update();
                         }
@@ -222,12 +224,17 @@ namespace MSCCoreLibrary.InteractionSystem
                     EditorGUILayout.Space();
                 }
             }
-            if (interactionComponent.activeInteraction != null && !interactions.Contains(interactionComponent.activeInteraction))
-            {
-                interactionComponent.activeInteraction = null;
-            }
             interactionComponent.interactions = interactions;
             serializedObject.ApplyModifiedProperties();
+            if (EditorGUI.EndChangeCheck() || GUI.changed)
+            {
+                Debug.Log("Interaction Config changed");
+                EditorUtility.SetDirty(interactionComponent);
+               /* if (!Application.isPlaying)
+                {
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(interactionComponent.gameObject.scene);
+                }*/
+            }
         }
 
         private void DrawInteractionEvents(InteractionConfig interactionConfig, int interactionIndex)
@@ -281,9 +288,9 @@ namespace MSCCoreLibrary.InteractionSystem
 
                     if (interactionEvent.onHold)
                     {
-                        interactionEvent.holdTime = EditorGUILayout.FloatField("Hold Time (seconds)", interactionEvent.holdTime);
-                        if (interactionEvent.holdTime < 0)
-                            interactionEvent.holdTime = 0;
+                        interactionEvent.holdDelay = EditorGUILayout.FloatField("Hold Delay (seconds)", interactionEvent.holdDelay);
+                        if (interactionEvent.holdDelay < 0)
+                            interactionEvent.holdDelay = 0;
                     }
                     EditorGUILayout.Space();
                 }
@@ -308,6 +315,9 @@ namespace MSCCoreLibrary.InteractionSystem
                         EditorGUILayout.LabelField("Hold Event (OnHold)", EditorStyles.boldLabel);
                         SerializedProperty onMouseHoldProp = serializedObject.FindProperty("interactions").GetArrayElementAtIndex(interactionIndex).FindPropertyRelative("interactionEvents").GetArrayElementAtIndex(eventIndex).FindPropertyRelative("OnHold");
                         EditorGUILayout.PropertyField(onMouseHoldProp);
+                        EditorGUILayout.LabelField("Hold Event (OnRelease)", EditorStyles.boldLabel);
+                        SerializedProperty onMouseHoldReleaseProp = serializedObject.FindProperty("interactions").GetArrayElementAtIndex(interactionIndex).FindPropertyRelative("interactionEvents").GetArrayElementAtIndex(eventIndex).FindPropertyRelative("OnRelease");
+                        EditorGUILayout.PropertyField(onMouseHoldReleaseProp);
                         EditorGUILayout.EndVertical();
 
                     }
@@ -329,8 +339,7 @@ namespace MSCCoreLibrary.InteractionSystem
         {
             Repaint();
         }
+
     }
-
-
-#endif
 }
+#endif
