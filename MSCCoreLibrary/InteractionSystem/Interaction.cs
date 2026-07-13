@@ -64,11 +64,6 @@ public enum InteractionType
 [DisallowMultipleComponent]
 public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
 {
-    public List<InteractionConfig> interactions = new List<InteractionConfig>();
-    public int activeInteractionIndex = -1;
-    private InteractionConfig activeInteraction = null;
-    private Collider interactionCollder = null;
-
     // --- Custom Serialization Fields ---
     [HideInInspector, SerializeField] private List<string> _sNames = new List<string>();
     [HideInInspector, SerializeField] private List<string> _sIcons = new List<string>();
@@ -87,15 +82,19 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
     [HideInInspector, SerializeField] private List<UnityEvent> _eOnScrollUp = new List<UnityEvent>();
     [HideInInspector, SerializeField] private List<UnityEvent> _eOnScrollDown = new List<UnityEvent>();
 
-    [HideInInspector] public bool _isDirty = false; 
+
+    public List<InteractionConfig> interactions = new List<InteractionConfig>();
+    public int activeInteractionIndex = -1;
+    private InteractionConfig activeInteraction = null;
+    private Collider interactionCollder = null;
+
+ //   [HideInInspector] public bool _isDirty = false; 
  
     // Unity calls this before saving the object (Editor/AssetBundle Export)
     public void OnBeforeSerialize()
     {
         //Seems like don't need that in game only in editor
 #if Mini
-        if(_isDirty) return; //Workaround for editor (only serialize when applying prefab changes)
-
         _sNames.Clear(); _sIcons.Clear(); _sTexts.Clear(); _sEnabled.Clear();
         _ePlayAudio.Clear(); _eSoundType.Clear(); _eVarName.Clear(); _eOnHold.Clear(); _eHoldDelay.Clear();
         _eOnClick.Clear(); _eOnHoldEv.Clear(); _eOnRelease.Clear(); _eOnScrollUp.Clear(); _eOnScrollDown.Clear();
@@ -241,6 +240,35 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
                 interactionEvent.OnClick?.Invoke();
         }
     }
+    private void CInputInteractionEvents(InteractionEvent interactionEvent, string buttonName)
+    {
+        if (interactionEvent.onHold)
+        {
+            if (cInput.GetButton(buttonName))
+            {
+                interactionEvent.holdTime += Time.deltaTime;
+                if (interactionEvent.holdTime >= interactionEvent.holdDelay)
+                    interactionEvent.OnHold?.Invoke();
+            }
+            if (cInput.GetButtonUp(buttonName))
+            {
+                if (interactionEvent.holdTime >= interactionEvent.holdDelay)
+                {
+                    interactionEvent.OnRelease?.Invoke();
+                }
+                else
+                {
+                    interactionEvent.OnClick?.Invoke();
+                }
+                interactionEvent.holdTime = 0f;
+            }
+        }
+        else
+        {
+            if (cInput.GetButtonDown(buttonName))
+                interactionEvent.OnClick?.Invoke();
+        }
+    }
 
     private void Update()
     {
@@ -266,8 +294,7 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
                                 activeInteraction.interactionEvents[i].OnScrollDown?.Invoke();
                             break;
                         case 4:
-                            if (cInput.GetButtonDown("Use"))
-                                activeInteraction.interactionEvents[i].OnClick?.Invoke();
+                            CInputInteractionEvents(activeInteraction.interactionEvents[i], "Use");
                             break;
                         default:
                             break;

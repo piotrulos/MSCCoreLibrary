@@ -70,18 +70,6 @@ namespace MSCCoreLibrary.InteractionSystem
         private List<InteractionElementDetails> showInteractionEventDetails = new List<InteractionElementDetails>();
 
         private string[] interactionTypeNames = new string[] { "Left Click", "Right Click", "Middle Click", "Scroll Wheel", "Use (F key)" };
-
-        void OnEnable()
-        {
-            PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;            
-        }
-
-        private void OnPrefabInstanceUpdated(GameObject instance)
-        {
-           // Debug.Log("OnPrefabInstanceUpdated");
-            ((Interaction)target)._isDirty = false;
-        }
-
         public override void OnInspectorGUI()
         {
             Interaction interactionComponent = (Interaction)target;
@@ -239,15 +227,16 @@ namespace MSCCoreLibrary.InteractionSystem
             serializedObject.ApplyModifiedProperties();
             if (EditorGUI.EndChangeCheck() || GUI.changed)
             {
-                interactionComponent._isDirty = true;
                 Debug.Log("Interaction Config changed");
                 EditorUtility.SetDirty(interactionComponent);
-               /* if (!Application.isPlaying)
-                {
-                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(interactionComponent.gameObject.scene);
-                }*/
+                //  
+
+                /* if (!Application.isPlaying)
+                 {
+                     UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(interactionComponent.gameObject.scene);
+                 }*/
             }
-            
+           // DrawDefaultInspector();
         }
 
         private void DrawInteractionEvents(InteractionConfig interactionConfig, int interactionIndex)
@@ -345,7 +334,7 @@ namespace MSCCoreLibrary.InteractionSystem
             EditorGUILayout.EndVertical();
         }
 
-        void OnInspectorUpdate()
+        void Update()
         {
             Repaint();
         }
