@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-
 namespace MSCCoreLibrary.InteractionSystem
 {
     static class GUIUtils
@@ -66,10 +65,22 @@ namespace MSCCoreLibrary.InteractionSystem
     [CustomEditor(typeof(Interaction))]
     public class InteractionEditor : Editor
     {
+        
         private List<bool> showElement = new List<bool>();
         private List<InteractionElementDetails> showInteractionEventDetails = new List<InteractionElementDetails>();
 
         private string[] interactionTypeNames = new string[] { "Left Click", "Right Click", "Middle Click", "Scroll Wheel", "Use (F key)" };
+
+        void OnEnable()
+        {
+            PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;            
+        }
+
+        private void OnPrefabInstanceUpdated(GameObject instance)
+        {
+           // Debug.Log("OnPrefabInstanceUpdated");
+            ((Interaction)target)._isDirty = false;
+        }
 
         public override void OnInspectorGUI()
         {
@@ -228,6 +239,7 @@ namespace MSCCoreLibrary.InteractionSystem
             serializedObject.ApplyModifiedProperties();
             if (EditorGUI.EndChangeCheck() || GUI.changed)
             {
+                interactionComponent._isDirty = true;
                 Debug.Log("Interaction Config changed");
                 EditorUtility.SetDirty(interactionComponent);
                /* if (!Application.isPlaying)
@@ -235,6 +247,7 @@ namespace MSCCoreLibrary.InteractionSystem
                     UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(interactionComponent.gameObject.scene);
                 }*/
             }
+            
         }
 
         private void DrawInteractionEvents(InteractionConfig interactionConfig, int interactionIndex)
@@ -326,15 +339,12 @@ namespace MSCCoreLibrary.InteractionSystem
                     SerializedProperty onMouseClickProp = serializedObject.FindProperty("interactions").GetArrayElementAtIndex(interactionIndex).FindPropertyRelative("interactionEvents").GetArrayElementAtIndex(eventIndex).FindPropertyRelative("OnClick");
                     EditorGUILayout.PropertyField(onMouseClickProp);
                     EditorGUILayout.EndVertical();
-
-
                 }
 
-
             }
-
             EditorGUILayout.EndVertical();
         }
+
         void OnInspectorUpdate()
         {
             Repaint();
