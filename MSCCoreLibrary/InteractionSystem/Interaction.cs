@@ -20,7 +20,7 @@ public class InteractionEvent
     public UnityEvent OnScrollDown = null;
 
     internal float holdTime = 0f;
-
+    internal bool holdMAPlayed = false;
     public InteractionEvent()
     {
         OnClick = new UnityEvent();
@@ -219,16 +219,28 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
             {
                 interactionEvent.holdTime += Time.deltaTime;
                 if (interactionEvent.holdTime >= interactionEvent.holdDelay)
+                {
+                    if (interactionEvent.playMasterAudioSound && !interactionEvent.holdMAPlayed)
+                    {
+                        MasterAudio.PlaySound3DAndForget(interactionEvent.soundType, transform, variationName: interactionEvent.variationName);
+                        interactionEvent.holdMAPlayed = true;
+                    }
                     interactionEvent.OnHold?.Invoke();
+                }
             }
             if (Input.GetMouseButtonUp(mouseButton))
             {
                 if (interactionEvent.holdTime >= interactionEvent.holdDelay)
                 {
+                    interactionEvent.holdMAPlayed = false;
                     interactionEvent.OnRelease?.Invoke();
                 }
                 else
                 {
+                    if (interactionEvent.playMasterAudioSound)
+                    {
+                        MasterAudio.PlaySound3DAndForget(interactionEvent.soundType, transform, variationName: interactionEvent.variationName);
+                    }
                     interactionEvent.OnClick?.Invoke();
                 }
                 interactionEvent.holdTime = 0f;
@@ -237,7 +249,13 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
         else
         {
             if (Input.GetMouseButtonDown(mouseButton))
+            {
+                if (interactionEvent.playMasterAudioSound)
+                {
+                    MasterAudio.PlaySound3DAndForget(interactionEvent.soundType, transform, variationName: interactionEvent.variationName);
+                }
                 interactionEvent.OnClick?.Invoke();
+            }
         }
     }
     private void CInputInteractionEvents(InteractionEvent interactionEvent, string buttonName)
@@ -248,16 +266,28 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
             {
                 interactionEvent.holdTime += Time.deltaTime;
                 if (interactionEvent.holdTime >= interactionEvent.holdDelay)
+                {
+                    if (interactionEvent.playMasterAudioSound && !interactionEvent.holdMAPlayed)
+                    {
+                        MasterAudio.PlaySound3DAndForget(interactionEvent.soundType, transform, variationName: interactionEvent.variationName);
+                        interactionEvent.holdMAPlayed = true;
+                    }
                     interactionEvent.OnHold?.Invoke();
+                }
             }
             if (cInput.GetButtonUp(buttonName))
             {
                 if (interactionEvent.holdTime >= interactionEvent.holdDelay)
                 {
+                    interactionEvent.holdMAPlayed = false;
                     interactionEvent.OnRelease?.Invoke();
                 }
                 else
                 {
+                    if (interactionEvent.playMasterAudioSound)
+                    {
+                        MasterAudio.PlaySound3DAndForget(interactionEvent.soundType, transform, variationName: interactionEvent.variationName);
+                    }
                     interactionEvent.OnClick?.Invoke();
                 }
                 interactionEvent.holdTime = 0f;
@@ -266,8 +296,54 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
         else
         {
             if (cInput.GetButtonDown(buttonName))
+            {
+                if (interactionEvent.playMasterAudioSound)
+                {
+                    MasterAudio.PlaySound3DAndForget(interactionEvent.soundType, transform, variationName: interactionEvent.variationName);
+                }
                 interactionEvent.OnClick?.Invoke();
+            }
         }
+    }
+
+    private void ParseInteraction(int i)
+    {
+        if (!activeInteraction.enabledInteractions[i]) return;
+
+        GUIPlaymakerGlobals.SetGUIVariable(activeInteraction.interactionIcon, true);
+        GUIPlaymakerGlobals.GUIinteraction = activeInteraction.interactionText;
+        switch (i)
+        {
+            case 0:
+            case 1:
+            case 2:
+                MouseInputInteractionEvents(activeInteraction.interactionEvents[i], i);
+                break;
+            case 3:
+                if (Input.mouseScrollDelta.y > 0)
+                {
+                    if (activeInteraction.interactionEvents[i].playMasterAudioSound)
+                    {
+                        MasterAudio.PlaySound3DAndForget(activeInteraction.interactionEvents[i].soundType, transform, variationName: activeInteraction.interactionEvents[i].variationName);
+                    }
+                    activeInteraction.interactionEvents[i].OnScrollUp?.Invoke();
+                }
+                else if (Input.mouseScrollDelta.y < 0)
+                {
+                    if (activeInteraction.interactionEvents[i].playMasterAudioSound)
+                    {
+                        MasterAudio.PlaySound3DAndForget(activeInteraction.interactionEvents[i].soundType, transform, variationName: activeInteraction.interactionEvents[i].variationName);
+                    }
+                    activeInteraction.interactionEvents[i].OnScrollDown?.Invoke();
+                }
+                break;
+            case 4:
+                CInputInteractionEvents(activeInteraction.interactionEvents[i], "Use");
+                break;
+            default:
+                break;
+        }
+
     }
 
     private void Update()
@@ -278,28 +354,7 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
         {
             for (int i = 0; i < activeInteraction.enabledInteractions.Length; i++)
             {
-                if (activeInteraction.enabledInteractions[i])
-                {
-                    switch (i)
-                    {
-                        case 0:
-                        case 1:
-                        case 2:
-                            MouseInputInteractionEvents(activeInteraction.interactionEvents[i], i);
-                            break;
-                        case 3:
-                            if (Input.mouseScrollDelta.y > 0)
-                                activeInteraction.interactionEvents[i].OnScrollUp?.Invoke();
-                            else if (Input.mouseScrollDelta.y < 0)
-                                activeInteraction.interactionEvents[i].OnScrollDown?.Invoke();
-                            break;
-                        case 4:
-                            CInputInteractionEvents(activeInteraction.interactionEvents[i], "Use");
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                ParseInteraction(i);
             }
         }
     }
