@@ -10,6 +10,7 @@ class CoreLibraryHelper : MonoBehaviour
         switch (Application.loadedLevelName)
         {
             case "MainMenu":
+                GameTime.ResetEvents();
                 GameTime.Reset();
                 break;
             case "Intro":

@@ -137,20 +137,16 @@ public static class GameTime
 
         initialized = (fsm_time != null && fsm_minutes != null && fsm_day != null);
 
-        colorFsm.FsmInject("Next day", delegate
+        colorFsm.FsmInject("24", delegate
         {
             Days day = Day;
             oldDay = Day;
             OnNextDay?.Invoke(day);
         }, index: 0);
 
-        colorFsm.FsmInject("State 4", delegate
-        {
-            Days day = Day;
-            if (day != oldDay) OnNextDay?.Invoke(day);
-        }, index: 0);
     }
 
+    internal static void ResetEvents() => OnNextDay = null;
     internal static void Reset() => initialized = false;
 
     /// <summary>
