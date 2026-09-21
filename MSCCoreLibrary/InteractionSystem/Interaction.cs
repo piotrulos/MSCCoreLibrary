@@ -87,7 +87,7 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
     public int activeInteractionIndex = -1;
     private InteractionConfig activeInteraction = null;
     private Collider interactionCollder = null;
-
+    private string interactionSuffix = string.Empty;
  //   [HideInInspector] public bool _isDirty = false; 
  
     // Unity calls this before saving the object (Editor/AssetBundle Export)
@@ -182,6 +182,10 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
         ModConsole.Warning(interactions.Count.ToString());
     }
 
+    public void InteractionTextSuffix(string suffix)
+    {
+        interactionSuffix = suffix;
+    }
     public void SetActiveInteraction(int index)
     {
         if (index >= 0 && index < interactions.Count)
@@ -311,7 +315,7 @@ public class Interaction : MonoBehaviour, ISerializationCallbackReceiver
         if (!activeInteraction.enabledInteractions[i]) return;
 
         GUIPlaymakerGlobals.SetGUIVariable(activeInteraction.interactionIcon, true);
-        GUIPlaymakerGlobals.GUIinteraction = activeInteraction.interactionText;
+        GUIPlaymakerGlobals.GUIinteraction = activeInteraction.interactionText + interactionSuffix;
         switch (i)
         {
             case 0:
